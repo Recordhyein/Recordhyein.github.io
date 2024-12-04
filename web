@@ -1,0 +1,1924 @@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        .loading-spinner {
+    display: none;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-right: 10px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.error-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #ff4444;
+    color: white;
+    padding: 15px 25px;
+    border-radius: 5px;
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from { transform: translateY(-100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+
+
+            .character-counter {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            font-size: 12px;
+            color: rgba(0,0,0,0.6);
+        }
+
+        .counter-warning {
+            color: #e7a33e;
+        }
+
+        .counter-limit {
+            color: #cc1016;
+        }
+
+        .assistant-wrapper {
+            position: relative;
+        }
+
+        .smart-suggestions {
+            background: white;
+            border: 1px solid rgba(0,0,0,0.08);
+            border-radius: 8px;
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            right: 0;
+            margin-bottom: 8px;
+            padding: 8px;
+            display: none;
+        }
+
+        .suggestion-chip {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #f3f2ef;
+            border-radius: 16px;
+            margin: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.3s;
+        }
+
+        .suggestion-chip:hover {
+            background: #e0e0e0;
+        }
+
+        .tooltip {
+            position: absolute;
+            background: #1a1a1a;
+            color: white;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            z-index: 1000;
+            display: none;
+        }
+
+        .progress-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .step-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.2);
+            transition: all 0.3s;
+        }
+
+        .step-dot.active {
+            background: #0a66c2;
+            transform: scale(1.2);
+        }
+
+        .preview-mode {
+            background: #f8f9fa;
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 16px;
+            display: none;
+        }
+
+        .preview-label {
+            font-size: 12px;
+            color: rgba(0,0,0,0.6);
+            margin-bottom: 8px;
+        }
+
+        .draft-saved {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: #1a1a1a;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(0,0,0,0.1);
+            border-top-color: #0a66c2;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: none;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .mention-suggestions {
+            position: absolute;
+            background: white;
+            border: 1px solid rgba(0,0,0,0.08);
+            border-radius: 4px;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .mention-item {
+            padding: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .mention-item:hover {
+            background: #f3f2ef;
+        }
+
+        .keyboard-shortcut {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(0,0,0,0.4);
+            font-size: 12px;
+            background: #f3f2ef;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto;
+        }
+
+        body {
+            background: #f3f2ef;
+        }
+
+        .navbar {
+            background: white;
+            padding: 0 24px;
+            height: 52px;
+            display: flex;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+        }
+
+        .nav-content {
+            max-width: 1128px;
+            width: 100%;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-search {
+            background: #eef3f8;
+            padding: 8px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 280px;
+        }
+
+        .nav-search input {
+            border: none;
+            background: none;
+            outline: none;
+            width: 100%;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: rgba(0,0,0,0.6);
+            font-size: 12px;
+            cursor: pointer;
+            text-decoration: none;
+            min-width: 80px;
+            position: relative;
+        }
+
+        .nav-item:hover {
+            color: rgba(0,0,0,0.9);
+        }
+
+        .nav-item i {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+
+        .notification-dot {
+            position: absolute;
+            top: -2px;
+            right: 20px;
+            width: 16px;
+            height: 16px;
+            background: #cc1016;
+            border-radius: 50%;
+            color: white;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .premium-tag {
+            position: absolute;
+            top: -4px;
+            right: 15px;
+            font-size: 10px;
+            color: #915907;
+        }
+
+        .main-content {
+            max-width: 1128px;
+            margin: 72px auto 0;
+            display: grid;
+            grid-template-columns: 225px 555px 300px;
+            gap: 24px;
+            padding: 0 24px;
+        }
+
+        .left-sidebar {
+            position: sticky;
+            top: 72px;
+        }
+
+        .profile-card {
+            background: white;
+            border-radius: 10px;
+            border: 1px solid rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+
+        .profile-background {
+            height: 54px;
+            background: linear-gradient(to right, #0e889b, #1b5771);
+        }
+
+        .profile-info {
+            text-align: center;
+            padding: 0 12px 16px;
+            position: relative;
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+        }
+
+        .profile-photo {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            border: 2px solid white;
+            background: #0a66c2;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin: -38px auto 12px;
+        }
+
+        .view-stats {
+            padding: 12px;
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+        }
+
+        .view-stats p {
+            color: rgba(0,0,0,0.6);
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+        }
+
+        .resources {
+            padding: 12px;
+        }
+
+        .resources a {
+            color: rgba(0,0,0,0.6);
+            font-size: 12px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 0;
+        }
+
+        .resources a:hover {
+            color: rgba(0,0,0,0.9);
+        }
+
+        .center-content {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .post-creation {
+            background: white;
+            border-radius: 10px;
+            border: 1px solid rgba(0,0,0,0.08);
+            padding: 16px;
+        }
+
+        .post-input {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .profile-mini {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: #0a66c2;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .post-start-btn {
+            flex: 1;
+            border: 1px solid rgba(0,0,0,0.3);
+            border-radius: 35px;
+            padding: 0 16px;
+            text-align: left;
+            color: rgba(0,0,0,0.6);
+            background: none;
+            cursor: pointer;
+        }
+
+        .post-start-btn:hover {
+            background: rgba(0,0,0,0.08);
+        }
+
+        .post-types {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .post-types button {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px;
+            border: none;
+            background: none;
+            color: rgba(0,0,0,0.6);
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .post-types button:hover {
+            background: rgba(0,0,0,0.08);
+        }
+
+        .post {
+            background: white;
+            border-radius: 10px;
+            border: 1px solid rgba(0,0,0,0.08);
+            padding: 16px;
+        }
+
+        .post-header {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+            position: relative;
+        }
+
+        .author-info {
+            flex: 1;
+        }
+
+        .author-info h3 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .author-info p {
+            font-size: 12px;
+            color: rgba(0,0,0,0.6);
+            margin-bottom: 2px;
+        }
+
+        .post-time {
+            font-size: 12px;
+            color: rgba(0,0,0,0.6);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .more-options {
+            background: none;
+            border: none;
+            color: rgba(0,0,0,0.6);
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .more-options:hover {
+            background: rgba(0,0,0,0.08);
+        }
+
+        .post-content {
+            font-size: 14px;
+            line-height: 1.6;
+            margin: 12px 0;
+        }
+
+        .post-metrics {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+            font-size: 12px;
+            color: rgba(0,0,0,0.6);
+        }
+
+        .reactions {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .reaction-icons {
+            display: flex;
+            margin-right: 4px;
+        }
+
+        .reaction-icons i {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 8px;
+            margin-right: -4px;
+        }
+
+        .like { background: #378fe9; color: white; }
+        .idea { background: #6dae4f; color: white; }
+        .love { background: #df704d; color: white; }
+
+        .post-actions {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            margin-top: 8px;
+        }
+
+        .post-actions button {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px;
+            border: none;
+            background: none;
+            color: rgba(0,0,0,0.6);
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .post-actions button:hover {
+            background: rgba(0,0,0,0.08);
+        }
+
+        .comment-section {
+            margin-top: 8px;
+        }
+
+        .comment-input-area {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .comment-start-btn {
+            flex: 1;
+            border: 1px solid rgba(0,0,0,0.3);
+            border-radius: 35px;
+            padding: 12px 16px;
+            text-align: left;
+            color: rgba(0,0,0,0.6);
+            background: none;
+            cursor: pointer;
+        }
+
+        .comment-assistant {
+            background: #f3f2ef;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .question {
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .answer-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid rgba(0,0,0,0.3);
+            border-radius: 4px;
+            margin-bottom: 12px;
+            font-size: 14px;
+            resize: vertical;
+        }
+
+        .assistant-actions {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .assistant-btn {
+            padding: 8px 16px;
+            border-radius: 16px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .next-btn {
+            background: #0a66c2;
+            color: white;
+        }
+
+        .back-btn {
+            background: rgba(0,0,0,0.08);
+            color: rgba(0,0,0,0.6);
+        }
+
+        .existing-comments {
+            margin-top: 16px;
+        }
+
+        .comment {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .comment-content {
+            flex: 1;
+            background: #f2f2f2;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .right-sidebar {
+            position: sticky;
+            top: 72px;
+        }
+
+        .news-card {
+            background: white;
+            border-radius: 10px;
+            border: 1px solid rgba(0,0,0,0.08);
+            padding: 16px;
+            margin-bottom: 8px;
+        }
+
+        .news-card h2 {
+            font-size: 16px;
+            margin-bottom: 12px;
+        }
+
+        .news-item {
+            display: flex;
+            align-items: start;
+            gap: 8px;
+            padding: 8px 0;
+            cursor: pointer;
+        }
+
+        .news-item:hover {
+            background: rgba(0,0,0,0.08);
+        }
+
+        .news-bullet {
+            width: 8px;
+            height: 8px;
+            background: rgba(0,0,0,0.6);
+            border-radius: 50%;
+            margin-top: 6px;
+        }
+
+        .news-text {
+            font-size: 14px;
+            color: rgba(0,0,0,0.9);
+        }
+
+        .news-time {
+            font-size: 12px;
+            color: rgba(0,0,0,0.6);
+        }
+
+        .footer {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            padding: 12px;
+            font-size: 12px;
+        }
+
+        .footer a {
+            color: rgba(0,0,0,0.6);
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            color: #0a66c2;
+            text-decoration: underline;
+        }
+
+
+
+        .comment-system {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .comment-trigger {
+            display: flex;
+            gap: 12px;
+            background: white;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            border: 1px solid rgba(0,0,0,0.08);
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #0a66c2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            margin-right: 20px;
+        }
+
+        .comment-input-trigger {
+            flex: 1;
+            border: 1px solid #0a66c2;
+            border-radius: 20px;
+            padding: 8px 16px;
+            color: #666;
+            background: transparent;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s ease;
+        }
+
+        .comment-input-trigger:hover {
+            background: rgba(10,102,194,0.1);
+        }
+
+        .comment-editor {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 16px;
+            display: none;
+            border: 1px solid rgba(0,0,0,0.08);
+        }
+
+        .editor-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .step-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .step {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            color: #666;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .step.active {
+            background: #0a66c2;
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .step-divider {
+            width: 40px;
+            height: 2px;
+            background: #e0e0e0;
+        }
+
+        .step-label {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .draft-status {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .editor-content {
+            margin-bottom: 16px;
+        }
+
+        .question {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #1a1a1a;
+        }
+
+        .context {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 16px;
+            padding: 12px;
+            background: #f9f9f9;
+            border-radius: 4px;
+            border-left: 3px solid #0a66c2;
+        }
+
+        .textarea-wrapper {
+            position: relative;
+            margin: 8px;
+        }
+
+        .comment-textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            resize: vertical;
+            font-size: 14px;
+            line-height: 1.5;
+            transition: all 0.2s ease;
+        }
+
+        .comment-textarea:focus {
+            outline: none;
+            border-color: #0a66c2;
+            box-shadow: 0 0 0 2px rgba(10,102,194,0.1);
+        }
+
+        .char-count {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            font-size: 12px;
+            color: #666;
+            background: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            pointer-events: none;
+        }
+
+        .ai-suggestions {
+            margin-top: 16px;
+        }
+
+        .suggestions-header {
+            font-size: 14px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .suggestion-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .suggestion-chip {
+            padding: 6px 12px;
+            background: #f0f7ff;
+            color: #0a66c2;
+            border-radius: 16px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+
+        .suggestion-chip:hover {
+            background: #0a66c2;
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .editor-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .action-left {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+            border: none;
+        }
+
+        .btn-secondary {
+            background: #f3f2ef;
+            color: #666;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .btn-primary {
+            background: #0a66c2;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #004182;
+        }
+
+        .btn-outline {
+            background: white;
+            color: #0a66c2;
+            border: 1px solid #0a66c2;
+        }
+
+        .btn-outline:hover {
+            background: #f0f7ff;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 4px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            animation: slideIn 0.3s ease;
+            z-index: 1000;
+        }
+
+        .notification.success {
+            background: #ecfdf3;
+            color: #027a48;
+        }
+
+        .notification.error {
+            background: #fef3f2;
+            color: #b42318;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .comments-list {
+            margin-top: 24px;
+        }
+
+        .comment {
+            background: white;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+            border: 1px solid rgba(232, 12, 12, 0.08);
+        }
+
+        .comment-header {
+            display: flex;
+            flex-direction: column;
+        
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .comment-info {
+            flex: 1;
+        }
+
+        .comment-author {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .comment-meta {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .comment-text {
+            font-size: 14px;
+            line-height: 1.5;
+            color: #1a1a1a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+        }
+
+        body {
+            background: #f3f2ef;
+            padding: 20px;
+        }
+
+        .comment-system {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .comment-trigger {
+            display: flex;
+            gap: 12px;
+            background: white;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            border: 1px solid rgba(0,0,0,0.08);
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #0a66c2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .comment-input-trigger {
+            flex: 1;
+            border: 1px solid #0a66c2;
+            border-radius: 20px;
+            padding: 8px 16px;
+            color: #666;
+            background: transparent;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s ease;
+        }
+
+        .comment-input-trigger:hover {
+            background: rgba(10,102,194,0.1);
+        }
+
+        .comment-editor {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 16px;
+            display: none;
+            border: 1px solid rgba(0,0,0,0.08);
+        }
+
+        .editor-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .step-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .step {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            color: #666;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .step.active {
+            background: #0a66c2;
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .step-divider {
+            width: 40px;
+            height: 2px;
+            background: #e0e0e0;
+        }
+
+        .step-label {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .draft-status {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .editor-content {
+            margin-bottom: 16px;
+        }
+
+        .question {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #1a1a1a;
+        }
+
+        .context {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 16px;
+            padding: 12px;
+            background: #f9f9f9;
+            border-radius: 4px;
+            border-left: 3px solid #0a66c2;
+        }
+
+        .textarea-wrapper {
+            position: relative;
+            margin-bottom: 8px;
+        }
+
+        .comment-textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            resize: vertical;
+            font-size: 14px;
+            line-height: 1.5;
+            transition: all 0.2s ease;
+        }
+
+        .comment-textarea:focus {
+            outline: none;
+            border-color: #0a66c2;
+            box-shadow: 0 0 0 2px rgba(10,102,194,0.1);
+        }
+
+        .char-count {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            font-size: 12px;
+            color: #666;
+            background: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            pointer-events: none;
+        }
+
+        .ai-suggestions {
+            margin-top: 16px;
+        }
+
+        .suggestions-header {
+            font-size: 14px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .suggestion-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .suggestion-chip {
+            padding: 6px 12px;
+            background: #f0f7ff;
+            color: #0a66c2;
+            border-radius: 16px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+
+        .suggestion-chip:hover {
+            background: #0a66c2;
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .editor-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .action-left {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+            border: none;
+        }
+
+        .btn-secondary {
+            background: #f3f2ef;
+            color: #666;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .btn-primary {
+            background: #0a66c2;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #004182;
+        }
+
+        .btn-outline {
+            background: white;
+            color: #0a66c2;
+            border: 1px solid #0a66c2;
+        }
+
+        .btn-outline:hover {
+            background: #f0f7ff;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 4px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            animation: slideIn 0.3s ease;
+            z-index: 1000;
+        }
+
+        .notification.success {
+            background: #ecfdf3;
+            color: #027a48;
+        }
+
+        .notification.error {
+            background: #fef3f2;
+            color: #b42318;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .comments-list {
+            margin-top: 24px;
+        }
+
+        .comment {
+            background: white;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+            border: 1px solid rgba(0,0,0,0.08);
+        }
+
+        .comment-header {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .comment-info {
+            flex: 1;
+        }
+
+        .comment-author {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .comment-meta {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .comment-text {
+            font-size: 14px;
+            line-height: 1.5;
+            color: #1a1a1a;
+        }
+
+
+
+
+    </style>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-content">
+            <div class="nav-left">
+                <i class="fab fa-linkedin" style="color: #0a66c2; font-size: 28px;"></i>
+                <div class="nav-search">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="검색">
+                </div>
+            </div>
+            <div class="nav-links">
+                <div class="nav-item">
+                    <i class="fas fa-home"></i>
+                    <span>홈</span>
+                </div>
+                <div class="nav-item">
+                    <i class="fas fa-user-friends"></i>
+                    <span>인맥</span>
+                    <div class="notification-dot">3</div>
+                </div>
+                <div class="nav-item">
+                    <i class="fas fa-briefcase"></i>
+                    <span>채용공고</span>
+                </div>
+                <div class="nav-item">
+                    <i class="fas fa-comment-dots"></i>
+                    <span>메시지</span>
+                </div>
+                <div class="nav-item">
+                    <i class="fas fa-bell"></i>
+                    <span>알림</span>
+                    <div class="notification-dot">5</div>
+                </div>
+                <div class="nav-item">
+                    <div class="profile-mini">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <span>나</span>
+                    <i class="fas fa-caret-down"></i>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-content">
+        <!-- Left Sidebar -->
+        <aside class="left-sidebar">
+            <div class="profile-card">
+                <div class="profile-background"></div>
+                <div class="profile-info">
+                    <div class="profile-photo">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <h2>사용자 이름</h2>
+                    <p>Software Engineer | AI Enthusiast</p>
+                </div>
+                <div class="view-stats">
+                    <p>
+                        <span>프로필 조회수</span>
+                        <strong>38</strong>
+                    </p>
+                    <p>
+                        <span>게시물 조회수</span>
+                        <strong>125</strong>
+                    </p>
+                </div>
+                <div class="resources">
+                    <a href="#"><i class="fas fa-bookmark"></i> 내 항목</a>
+                    <a href="#"><i class="fas fa-user-friends"></i> 그룹</a>
+                    <a href="#"><i class="fas fa-calendar-alt"></i> 이벤트</a>
+                    <a href="#"><i class="fas fa-hashtag"></i> 팔로우한 해시태그</a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Center Content -->
+        <main class="center-content">
+            <!-- Post Creation -->
+            <div class="post-creation">
+                <div class="post-input">
+                    <div class="profile-mini">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <button class="post-start-btn">게시물 작성하기</button>
+                </div>
+                <div class="post-types">
+                    <button><i class="fas fa-image" style="color: #70b5f9;"></i> 사진</button>
+                    <button><i class="fas fa-video" style="color: #7fc15e;"></i> 동영상</button>
+                    <button><i class="fas fa-calendar-alt" style="color: #e7a33e;"></i> 이벤트</button>
+                    <button><i class="fas fa-newspaper" style="color: #fc9295;"></i> 글쓰기</button>
+                </div>
+            </div>
+
+            <!-- Main Post -->
+            <div class="post">
+                <div class="post-header">
+                    <div class="profile-mini">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="author-info">
+                        <h3>Sarah Chen</h3>
+                        <p>Senior Data Scientist at Google | AI Researcher</p>
+                        <div class="post-time">
+                            2시간 전 • <i class="fas fa-globe-americas"></i>
+                        </div>
+                    </div>
+                    <button class="more-options">
+                        <i class="fas fa-ellipsis-h"></i>
+                    </button>
+                </div>
+
+                <div class="post-content">
+                    Just wrapped up an exciting project using GPT-4 to improve our customer service automation. The results were incredible:
+
+                    📊 40% reduction in response time
+                    🎯 95% accuracy in intent recognition
+                    💡 60% increase in customer satisfaction
+
+                    Key learnings:
+                    1. Fine-tuning is crucial for domain-specific tasks
+                    2. Prompt engineering makes a huge difference
+                    3. Human oversight is still essential
+                    4. Regular model evaluation is key
+
+                    What's been your experience with implementing AI in customer service?
+
+                    #ArtificialIntelligence #CustomerService #Innovation #GPT4 #TechTrends
+                </div>
+
+                <div class="post-metrics">
+                    <div class="reactions">
+                        <div class="reaction-icons">
+                            <i class="fas fa-thumbs-up like"></i>
+                            <i class="fas fa-lightbulb idea"></i>
+                            <i class="fas fa-heart love"></i>
+                        </div>
+                        <span>789</span>
+                    </div>
+                    <div>댓글 48개 • 공유 12회</div>
+                </div>
+
+                <div class="post-actions">
+                    <button><i class="far fa-thumbs-up"></i> 좋아요</button>
+                    <button onclick="showCommentAssistant()"><i class="far fa-comment"></i> 댓글</button>
+                    <button><i class="fas fa-share"></i> 공유</button>
+                    <button><i class="far fa-paper-plane"></i> 보내기</button>
+                </div>
+
+                <!-- Comment Section -->
+                <div class="comment-system">
+                    <!-- Comment Trigger -->
+                    <div class="comment-trigger">
+                        <div class="avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <button class="comment-input-trigger" onclick="showCommentEditor()">
+                            댓글을 입력하세요...
+                        </button>
+                    </div>
+            
+                    <!-- Comment Editor -->
+                    <div class="comment-editor" id="commentEditor">
+                        <div class="editor-header">
+                            <div class="step-indicator">
+                                <div class="step active">1</div>
+                                <div class="step-divider"></div>
+                                <div class="step">2</div>
+                                <div class="step-divider"></div>
+                                <div class="step">3</div>
+                            </div>
+                            <div class="draft-status">자동 저장됨</div>
+                        </div>
+            
+                        <div class="editor-content">
+                            <div class="question" id="currentQuestion"></div>
+                            <div class="context" id="currentContext"></div>
+                            <div class="textarea-wrapper">
+                                <textarea 
+                                    class="comment-textarea" 
+                                    id="commentInput" 
+                                    placeholder="여기에 답변을 입력하세요..."
+                                ></textarea>
+                                <div class="char-count">0/1000</div>
+                            </div>
+            
+                            <div class="ai-suggestions">
+                                <div class="suggestions-header">
+                                    <i class="fas fa-lightbulb"></i>
+                                    AI 추천 답변
+                                </div>
+                                <div class="suggestion-chips" id="suggestionChips"></div>
+                            </div>
+                        </div>
+            
+                        <div class="editor-actions">
+                            <div class="action-left">
+                                <button class="btn btn-secondary" onclick="prevStep()" id="prevBtn">
+                                    <i class="fas fa-arrow-left"></i> 이전
+                                </button>
+                                <button class="btn btn-outline" onclick="improveComment()" id="improveBtn">
+                                    <i class="fas fa-magic"></i> AI 개선
+                                </button>
+                            </div>
+                            <button class="btn btn-primary" onclick="nextStep()" id="nextBtn">
+                                다음 <i class="fas fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+            
+                    <!-- Comments List -->
+                    <div class="comments-list" id="commentsList">
+                        <!-- Existing comments will be added here -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="post">
+                <div class="post-header">
+                    <div class="profile-mini">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="author-info">
+                        <h3>Jihoon Choi</h3>
+                        <p>Senior Data Scientist at Google | AI Researcher</p>
+                        <div class="post-time">
+                            12시간 전 • <i class="fas fa-globe-americas"></i>
+                        </div>
+                    </div>
+                    <button class="more-options">
+                        <i class="fas fa-ellipsis-h"></i>
+                    </button>
+                </div>
+
+                <div class="post-content">
+                    Transformed training program with AI:
+                    ✨ 40% faster student comprehension
+                    📊 20% higher exam scores  
+                    🎓 15% more students completing program
+
+                    Key factors:
+                    1. Personalized learning paths
+                    2. Real-time feedback loops
+                    3. Seamless admin automation
+
+                    Let me know if you'd like any details on the implementation!
+                </div>
+
+                <div class="post-metrics">
+                    <div class="reactions">
+                        <div class="reaction-icons">
+                            <i class="fas fa-thumbs-up like"></i>
+                            <i class="fas fa-lightbulb idea"></i>
+                            <i class="fas fa-heart love"></i>
+                        </div>
+                        <span>239</span>
+                    </div>
+                    <div>댓글 22개 • 공유 40회</div>
+                </div>
+
+                <div class="post-actions">
+                    <button><i class="far fa-thumbs-up"></i> 좋아요</button>
+                    <button onclick="showCommentAssistant()"><i class="far fa-comment"></i> 댓글</button>
+                    <button><i class="fas fa-share"></i> 공유</button>
+                    <button><i class="far fa-paper-plane"></i> 보내기</button>
+                </div>
+            </div>    
+
+
+        </main>
+
+        <!-- Right Sidebar -->
+        <aside class="right-sidebar">
+            <div class="news-card">
+                <h2>LinkedIn 뉴스</h2>
+                <div class="news-item">
+                    <div class="news-bullet"></div>
+                    <div>
+                        <div class="news-text">AI 기술 혁신이 가져올 미래</div>
+                        <div class="news-time">1일 전 • 조회수 5,238</div>
+                    </div>
+                </div>
+
+                <div class="news-item">
+                    <div class="news-bullet"></div>
+                    <div>
+                        <div class="news-text">AI 기술 혁신이 가져올 미래</div>
+                        <div class="news-time">1일 전 • 조회수 5,238</div>
+                    </div>
+                </div>
+
+                <div class="news-item">
+                    <div class="news-bullet"></div>
+                    <div>
+                        <div class="news-text">AI 기술 혁신이 가져올 미래</div>
+                        <div class="news-time">1일 전 • 조회수 5,238</div>
+                    </div>
+                </div>
+
+
+              
+                <!-- More news items... -->
+            </div>
+
+            <div class="news-card">
+                <h2>추천 인맥</h2>
+                <div class="news-item">
+                    <div class="news-bullet"></div>
+                    <div>
+                        <div class="news-text">AI 기술 혁신이 가져올 미래</div>
+                        <div class="news-time">1일 전 • 조회수 5,238</div>
+                    </div>
+                </div>
+
+                <div class="news-item">
+                    <div class="news-bullet"></div>
+                    <div>
+                        <div class="news-text">AI 기술 혁신이 가져올 미래</div>
+                        <div class="news-time">1일 전 • 조회수 5,238</div>
+                    </div>
+                </div>
+                <!-- Connection suggestions... -->
+            </div>
+        </aside>
+    </div>
+
+
+    <script>
+        // 댓글 작성 단계별 데이터
+        const steps = [
+            {
+                question: "이 포스트에서 가장 인상 깊었던 부분은 무엇인가요?",
+                context: "구체적인 수치나 결과, 인사이트 등에 대해 언급해보세요.",
+                suggestions: [
+                    "GPT-4를 활용한 고객 서비스 자동화의 성과가 인상적입니다.",
+                    "95%의 정확도는 매우 놀라운 결과네요.",
+                    "인간의 감독이 여전히 중요하다는 점이 인상깊습니다."
+                ]
+            },
+            {
+                question: "비슷한 경험이나 의견을 공유해주세요.",
+                context: "본인의 실제 경험이나 관찰한 사례를 공유하면 더욱 좋습니다.",
+                suggestions: [
+                    "저희 팀에서도 ChatGPT를 활용해 고객 응대를 개선했습니다.",
+                    "AI 도입 초기에 비슷한 어려움을 겪었는데...",
+                    "다른 산업에서도 비슷한 성과를 본 사례가 있습니다."
+                ]
+            },
+            {
+                question: "어떤 제안이나 질문을 하고 싶으신가요?",
+                context: "건설적인 제안이나 구체적인 질문을 통해 대화를 이어가보세요.",
+                suggestions: [
+                    "감성 분석을 추가하면 더 좋은 결과가 있을 것 같습니다.",
+                    "Fine-tuning 과정에 대해 더 자세히 알고 싶습니다.",
+                    "다른 언어에서도 비슷한 성과가 있었나요?"
+                ]
+            }
+        ];
+
+        // 상태 관리
+        let currentStep = 0;
+        let answers = ['', '', ''];
+        let draftTimeoutId = null;
+
+        // 댓글 에디터 표시
+        function showCommentEditor() {
+            document.getElementById('commentEditor').style.display = 'block';
+            updateEditorContent();
+            // 저장된 드래프트 불러오기
+            loadDraft();
+        }
+
+        // 에디터 콘텐츠 업데이트
+        function updateEditorContent() {
+            document.getElementById('currentQuestion').textContent = steps[currentStep].question;
+            document.getElementById('currentContext').textContent = steps[currentStep].context;
+            updateSuggestions();
+            updateStepIndicator();
+            updateNavigationButtons();
+        }
+
+        // AI 제안 업데이트
+        function updateSuggestions() {
+            const container = document.getElementById('suggestionChips');
+            container.innerHTML = '';
+            steps[currentStep].suggestions.forEach((suggestion) => {
+                const chip = document.createElement('div');
+                chip.className = 'suggestion-chip';
+                chip.textContent = suggestion;
+                chip.onclick = () => applySuggestion(suggestion);
+                container.appendChild(chip);
+            });
+        }
+
+        // 단계 표시 업데이트
+        function updateStepIndicator() {
+            const stepsElements = document.querySelectorAll('.step');
+            stepsElements.forEach((step, index) => {
+                if (index === currentStep) {
+                    step.classList.add('active');
+                } else {
+                    step.classList.remove('active');
+                }
+            });
+        }
+
+        // 네비게이션 버튼 업데이트
+        function updateNavigationButtons() {
+            document.getElementById('prevBtn').style.display = currentStep === 0 ? 'none' : 'inline-flex';
+            document.getElementById('nextBtn').textContent = currentStep === steps.length - 1 ? '댓글 게시' : '다음';
+        }
+
+        // 제안 적용
+        function applySuggestion(suggestion) {
+            const textarea = document.getElementById('commentInput');
+            textarea.value = suggestion;
+            updateCharacterCount();
+        }
+
+        // 이전 단계로 이동
+        function prevStep() {
+            if (currentStep > 0) {
+                saveDraft();
+                currentStep--;
+                updateEditorContent();
+                document.getElementById('commentInput').value = answers[currentStep];
+            }
+        }
+
+        // 다음 단계로 이동
+        function nextStep() {
+            const input = document.getElementById('commentInput').value.trim();
+            if (!input) {
+                alert('답변을 입력해주세요.');
+                return;
+            }
+            answers[currentStep] = input;
+            saveDraft();
+            if (currentStep === steps.length - 1) {
+                submitComment();
+            } else {
+                currentStep++;
+                updateEditorContent();
+                document.getElementById('commentInput').value = answers[currentStep];
+            }
+        }
+
+        // AI 개선 호출
+        function improveComment() {
+            const input = document.getElementById('commentInput').value.trim();
+            if (!input) {
+                alert('먼저 답변을 입력해주세요.');
+                return;
+            }
+            // 간단한 개선 논리 (실제 AI API 호출 가능)
+            const improvedText = `${input} (AI로 개선되었습니다)`;
+            document.getElementById('commentInput').value = improvedText;
+            updateCharacterCount();
+            showNotification('답변이 AI로 개선되었습니다.', 'success');
+        }
+
+        // 댓글 제출
+        function submitComment() {
+            const commentsList = document.getElementById('commentsList');
+            const comment = document.createElement('div');
+            comment.className = 'comment';
+            comment.innerHTML = `
+                <div class="comment-header">
+                    <div class="avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+            
+                </div>
+                <div class="comment-text">${answers.join(' ')}</div>
+            `;
+            commentsList.prepend(comment);
+            resetEditor();
+            showNotification('댓글이 성공적으로 게시되었습니다.', 'success');
+        }
+
+        // 에디터 리셋
+        function resetEditor() {
+            currentStep = 0;
+            answers = ['', '', ''];
+            document.getElementById('commentEditor').style.display = 'none';
+            document.getElementById('commentInput').value = '';
+            saveDraft(); // 드래프트 초기화
+        }
+
+        // 글자 수 업데이트
+        function updateCharacterCount() {
+            const textarea = document.getElementById('commentInput');
+            const charCount = textarea.value.length;
+            const charCountElement = document.querySelector('.char-count');
+            charCountElement.textContent = `${charCount}/1000`;
+            if (charCount > 1000) {
+                charCountElement.style.color = '#b42318';
+            } else {
+                charCountElement.style.color = '#666';
+            }
+        }
+
+        // 드래프트 저장
+        function saveDraft() {
+            clearTimeout(draftTimeoutId);
+            draftTimeoutId = setTimeout(() => {
+                localStorage.setItem('commentDraft', JSON.stringify(answers));
+            }, 500);
+        }
+
+        // 드래프트 로드
+        function loadDraft() {
+            const savedDraft = localStorage.getItem('commentDraft');
+            if (savedDraft) {
+                answers = JSON.parse(savedDraft);
+                document.getElementById('commentInput').value = answers[currentStep];
+                updateCharacterCount();
+            }
+        }
+
+        // 알림 표시
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+                ${message}
+            `;
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 3000);
+        }
+
+        // 초기화
+        document.getElementById('commentInput').addEventListener('input', updateCharacterCount);
+    </script>
+
+  
+ 
+
+
+</body>
+</html>
